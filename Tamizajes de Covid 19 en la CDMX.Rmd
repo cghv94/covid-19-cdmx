@@ -1,0 +1,142 @@
+---
+title: "Tamizajes de Covid-19 en la CDMX"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: column
+    vertical_layout: scroll
+    theme: lumen
+    social: ["twitter", "facebook", "menu"]
+    source_code: embed
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(data.table)
+library(tidyverse)
+library(plotly)
+library(DT)
+```
+
+```{r include=FALSE}
+tamizajes <- fread("https://datos.cdmx.gob.mx/explore/dataset/tamizajes-cdmx/download/?format=csv&timezone=America/Mexico_City&lang=es&use_labels_for_header=true&csv_separator=%2C")
+uuid <- data.frame(table(tamizajes$uuid))
+uuid <- arrange(uuid, Freq)
+uuid_igual_1 <- filter(uuid, Freq == 1)
+uuid_mayor_1 <- filter(uuid, Freq != 1)
+tamizajes$fecha_salida <- as.Date(tamizajes$fecha_salida)
+tamizajes <- tamizajes[with(tamizajes, order(-tamizajes$fecha_salida)), ] 
+tamizajes <- distinct(tamizajes, uuid, .keep_all = T)
+s_grave <- filter(tamizajes, tamizajes$resultado_coronavirus_fase_2 == "Sospechoso grave")
+s_grave$alcaldia <- replace(s_grave$alcaldia, s_grave$alcaldia == "", "NA")
+n_graves <- nrow(s_grave)
+```
+
+
+Evidencia de casos sospechosos graves
+========================================
+
+Column {.sidebar}
+-----------------------------------------------------------------------
+
+Sobre este informe:
+
+El resumen que se presenta a continuaión, está elaborado a partir de la información referente a los registros del uso del servicio SMS-COVID.
+
+El servicio consiste en un cuestionario que se puede contestar vía web, mensaje SMS o teléfono y la información es recabada por el [Gobierno de la Ciudad de México](https://www.cdmx.gob.mx/).
+
+Toda la información utilizada en este informe es pública. Está registrada como de [Libre Uso](https://datos.gob.mx/libreusomx) bajo los [Términos de Libre Uso MX](https://datos.gob.mx/libreusomx) de los [Datos Abiertos del Gobierno de México](https://datos.gob.mx/) y es compatible con la [licencia Creative Commons, Attribution 4.0 International (CC BY 4.0)](https://creativecommons.org/licenses/by-nc-nd/4.0/legalcode.es).
+
+Datos disponibles en:
+
+https://datos.cdmx.gob.mx/explore/dataset/tamizajes-cdmx/table/
+
+
+Última actualización: `r format(Sys.Date(), format = "%B %d, %Y")`.
+
+
+
+Column
+-----------------------------------------------------------------------
+
+### Número de casos sospechosos graves
+
+```{r}
+valueBox(n_graves, icon="fa-frown", color = "#FF0000")
+```
+
+
+### Número de casos sospechosos graves por sexo
+
+```{r}
+Sex<-as.data.frame(s_grave$sexo)
+Sexo<-as.data.frame(table(Sex=Sex))
+Sexo$Sex<-as.character(Sexo$Sex)
+Sexo$Freq<-as.numeric(Sexo$Freq)
+colnames(Sexo) <- c("Sexo", "Frecuencia")
+p_sexo <- ggplot(Sexo, aes(x=Sexo, y=Frecuencia, fill=Sexo)) +
+  geom_bar(stat="identity", alpha=.6, width=.6) +
+  scale_fill_brewer(palette = "Set2") +
+  xlab("Sexo") +
+  ylab("Número de casos") +
+  theme_bw()
+ggplotly(p_sexo)
+```
+
+> Fuente: Elaboración propia con datos del Gobierno de la CDMX
+
+
+### Número de casos sospechosos graves por edad
+
+```{r message=FALSE, warning=FALSE, paged.print=FALSE}
+p_edad <- ggplot(s_grave,aes(x=edad,fill=sexo))+
+  geom_bar(position="dodge", alpha=.6, width=.6)+
+  scale_fill_brewer(palette = "Set2") +
+  xlab("Edad") +
+  ylab("Número de casos sospechosos graves")
+ggplotly(p_edad)
+```
+
+> Fuente: Elaboración propia con datos del Gobierno de la CDMX
+
+
+### Número de casos sospechosos graves por Alcaldía
+
+```{r}
+p_alcaldia <- ggplot(s_grave,aes(x=alcaldia,fill=sexo))+
+  geom_bar(position="dodge", alpha=.6, width=.6)+
+  scale_fill_brewer(palette = "Set2") +
+  theme(axis.text.x = element_text(angle=90)) +
+  xlab("Alcaldía") +
+  ylab("Casos sospechosos graves")
+ggplotly(p_alcaldia)
+```
+
+> Fuente: Elaboración propia con datos del Gobierno de la CDMX
+
+
+### Número de casos sospechosos graves con morbilidad
+
+```{r}
+p_morbilidades <- ggplot(s_grave,aes(x=morbilidades,fill=sexo))+
+  geom_bar(position="dodge", alpha=.6, width=.6)+
+  scale_fill_brewer(palette = "Set2") +
+  xlab("Morbilidades") +
+  ylab("Número de casos sospechosos graves")
+ggplotly(p_morbilidades)
+```
+
+> Fuente: Elaboración propia con datos del Gobierno de la CDMX
+
+
+Créditos
+========================================
+
+Created by: Cesar Hernández
+
+Correo: cghv94@outlook.es
+
+Twitter: @[cghv94](https://twitter.com/cghv94)
+
+Esta obra fue generada mediante R en `r format(Sys.Date(), format = "%B %d, %Y")` y está bajo una [licencia de Creative Commons, Attribution 4.0 International (CC BY 4.0)](https://creativecommons.org/licenses/by-nc-nd/4.0/legalcode.es).
+
+Creative Commons (CC).
