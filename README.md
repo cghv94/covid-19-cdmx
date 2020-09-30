@@ -1,7 +1,7 @@
 # covid-19-cdmx
 Sobre este informe:
 
-El resumen que se presenta a continuaión, está elaborado a partir de la información referente a los registros del uso del servicio SMS-COVID.
+El resumen que se presenta a continuación, está elaborado a partir de la información referente a los registros del uso del servicio SMS-COVID.
 
 El servicio consiste en un cuestionario que se puede contestar vía web, mensaje SMS o teléfono y la información es recabada por el Gobierno de la Ciudad de México.
 
